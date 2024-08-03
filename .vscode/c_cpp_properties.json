@@ -1,0 +1,27 @@
+{
+    "configurations": [
+        {
+            "name": "Mac",
+            "includePath": [
+                "${workspaceFolder}/**"
+            ],
+            "defines": [
+                "DONT_USE_BOOTSTRAP_MAP",
+                "NEED_DL_SYSINFO_DSO",
+                "SHARED",
+                "DO_RELA",
+                "RTLD_BOOTSTRAP",
+                "RESOLVE_MAP",
+                "HAVE_GETTIMEOFDAY_VSYSCALL"
+            ],
+            "macFrameworkPath": [
+                "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/System/Library/Frameworks"
+            ],
+            "compilerPath": "/usr/bin/clang",
+            "cStandard": "c17",
+            "cppStandard": "c++17",
+            "intelliSenseMode": "macos-clang-x64"
+        }
+    ],
+    "version": 4
+}
