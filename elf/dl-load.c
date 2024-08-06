@@ -1097,7 +1097,7 @@ struct link_map *
 
   {
     /* Scan the program header table, collecting its load commands.  */
-    struct loadcmd loadcmds[l->l_phnum];
+    struct loadcmd loadcmds[l->l_phnum];//~有多少个 program head PT_LOAD 就有多少个loadcmds项。
     size_t nloadcmds = 0;
     bool has_holes = false;
     bool empty_dynamic = false;
@@ -1131,7 +1131,7 @@ struct link_map *
 	  l->l_phdr = (void *) ph->p_vaddr;
 	  break;
 
-	case PT_LOAD:
+	case PT_LOAD://~ PT_LOAD处理
 	  /* A load command tells us to map in part of the file.
 	     We record the load commands and process them all later.  */
 	  if (__glibc_unlikely (((ph->p_vaddr - ph->p_offset)
@@ -1254,7 +1254,7 @@ struct link_map *
     /* Now process the load commands and map segments into memory.
        This is responsible for filling in:
        l_map_start, l_map_end, l_addr, l_contiguous, l_text_end, l_phdr
-     *//*xiaojin load-so -5*/
+     */ /* xiaojin load-so -5 开始映射了，nloadcmds就是program header的个数。loadcmds存了每个ph的起始 结束位置。*/
     errstring = _dl_map_segments (l, fd, header, type, loadcmds, nloadcmds,
 				  maplength, has_holes, loader);
     if (__glibc_unlikely (errstring != NULL))

@@ -245,7 +245,7 @@ _dl_map_object_deps (struct link_map *map,
 		/* Store the tag in the argument structure.  */
 		args.name = name;
 
-		/*xiaojin load-so -1*/int err = _dl_catch_exception (&exception, openaux, &args);
+		/*xiaojin load-so -1 l_info就是dynmic段，内含了要加载的so，tag type= DT_NEEDED */int err = _dl_catch_exception (&exception, openaux, &args);
 		if (__glibc_unlikely (exception.errstring != NULL))
 		  {
 		    if (err)
