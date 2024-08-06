@@ -99,7 +99,7 @@ _dl_map_segments (struct link_map *l, int fd,
            - MAP_BASE_ADDR (l));
 
       /* Remember which part of the address space this object uses.  */
-      /*xiaojin load-so -6*/l->l_map_start = _dl_map_segment (c, mappref, maplength, fd);
+      /*xiaojin load-so -6 先分配整个空间，然后在下面while循环里面细化映射 */l->l_map_start = _dl_map_segment (c, mappref, maplength, fd);
       if (__glibc_unlikely ((void *) l->l_map_start == MAP_FAILED))
         return DL_MAP_SEGMENTS_ERROR_MAP_SEGMENT;
 
@@ -114,7 +114,7 @@ _dl_map_segments (struct link_map *l, int fd,
              handle the portion of the segment past the end of the file
              mapping.  */
           if (__glibc_unlikely
-              (__mprotect ((caddr_t) (l->l_addr + c->mapend),
+              (__mprotect ((caddr_t) (l->l_addr + c->mapend),//~ 三分天下。mprotect有切分vma的能力。中间的vma不能访问。`---p`
                            loadcmds[nloadcmds - 1].mapstart - c->mapend,
                            PROT_NONE) < 0))
             return DL_MAP_SEGMENTS_ERROR_MPROTECT;
@@ -134,7 +134,7 @@ _dl_map_segments (struct link_map *l, int fd,
     {
       if (c->mapend > c->mapstart
           /* Map the segment contents from the file.  */
-          && (__mmap ((void *) (l->l_addr + c->mapstart),
+          && (__mmap ((void *) (l->l_addr + c->mapstart),//~ MAP_FIX使得可以覆盖掉之前的总体映射。
                       c->mapend - c->mapstart, c->prot,
                       MAP_FIXED|MAP_COPY|MAP_FILE,
                       fd, c->mapoff)
@@ -177,7 +177,7 @@ _dl_map_segments (struct link_map *l, int fd,
                             GLRO(dl_pagesize), c->prot);
             }
 
-          if (zeroend > zeropage)
+          if (zeroend > zeropage)//~ bss段直接做成了annoy map。
             {
               /* Map the remaining zero pages in from the zero fill FD.  */
               caddr_t mapat;

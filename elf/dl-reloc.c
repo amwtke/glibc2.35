@@ -331,7 +331,7 @@ _dl_relocate_object (struct link_map *l, struct r_scope_elem *scope[],
     }
 
   /* In case we can protect the data now that the relocations are
-     done, do it.  */
+     done, do it.  */ /* xiaojin split-vma -1 _dl_protect_relro*/
   if (l->l_relro_size != 0)
     _dl_protect_relro (l);
 }
@@ -347,7 +347,7 @@ _dl_protect_relro (struct link_map *l)
 			       + l->l_relro_addr
 			       + l->l_relro_size),
 			      GLRO(dl_pagesize));
-  if (start != end
+  if (start != end //! xiaojin split-vma -2 exp 就是got表部分及其其他 data以前的section都不能变化了，防止修改，加上了 prot_read的保护，现象就是 最后一个PT_LOAD裂开了，一个只读一个可读写。最后PT_LOAD其实分成了三段：|.got .dynmic代表的只读部分| .data 可读写部分 | .bss压根没有文件的匿名可读写部分| .
       && __mprotect ((void *) start, end - start, PROT_READ) < 0)
     {
       static const char errstring[] = N_("\

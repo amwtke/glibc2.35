@@ -2503,6 +2503,7 @@ dl_main (const ElfW(Phdr) *phdr,
 
       /* Mark the link map as not yet relocated again.  */
       GL(dl_rtld_map).l_relocated = 0;
+      //~xiaojin split-vma -0 _dl_relocate_object
       _dl_relocate_object (&GL(dl_rtld_map), main_map->l_scope, 0, 0);
 
       rtld_timer_accum (&relocate_time, start);
