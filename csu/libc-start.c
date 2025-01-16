@@ -230,6 +230,7 @@ STATIC int LIBC_START_MAIN (int (*main) (int, char **, char **
    For dynamically linked executables, the dynamic segment is used to
    locate constructors and destructors.  For statically linked
    executables, the relevant symbols are access directly.  */
+  //!xiaojin-main main的glibc入口
 STATIC int
 LIBC_START_MAIN (int (*main) (int, char **, char ** MAIN_AUXVEC_DECL),
 		 int argc, char **argv,
@@ -388,7 +389,7 @@ LIBC_START_MAIN (int (*main) (int, char **, char ** MAIN_AUXVEC_DECL),
 
   _dl_debug_initialize (0, LM_ID_BASE);
 #endif
-
+  //!xiaojin-main 真正的main入口
   __libc_start_call_main (main, argc, argv MAIN_AUXVEC_PARAM);
 }
 

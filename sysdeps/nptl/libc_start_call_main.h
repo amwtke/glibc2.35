@@ -70,6 +70,6 @@ __libc_start_call_main (int (*main) (int, char **, char ** MAIN_AUXVEC_DECL),
 	while (1)
 	  INTERNAL_SYSCALL_CALL (exit, 0);
     }
-
+//!xiaojin-main 最后main会调用exit回收资源。
   exit (result);
 }
