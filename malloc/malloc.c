@@ -3282,6 +3282,7 @@ tcache_thread_shutdown (void)
 #endif /* !USE_TCACHE  */
 
 #if IS_IN (libc)
+//!xiaojin-malloc 定义处 __libc_malloc
 void *
 __libc_malloc (size_t bytes)
 {
