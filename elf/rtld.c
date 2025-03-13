@@ -458,7 +458,7 @@ RTLD_START
    references.  When the tools don't permit us to avoid using a GOT entry
    for _dl_rtld_global (no attribute_hidden support), we must make sure
    this function is not inlined (see below).  */
-
+//!xiaojin-ld_start -2.1 _dl_start_final定义
 #ifdef DONT_USE_BOOTSTRAP_MAP
 static inline ElfW(Addr) __attribute__ ((always_inline))
 _dl_start_final (void *arg)
@@ -504,6 +504,7 @@ _dl_start_final (void *arg, struct dl_start_final_info *info)
      file access.  It will call `dl_main' (below) to do all the real work
      of the dynamic linker, and then unwind our frame and run the user
      entry point on the same stack we entered on.  */
+  //!xiaojin-ld_start -3 _dl_sysdep_start
   start_addr = _dl_sysdep_start (arg, &dl_main);
 
   if (__glibc_unlikely (GLRO(dl_debug_mask) & DL_DEBUG_STATISTICS))
@@ -521,7 +522,7 @@ _dl_start_final (void *arg, struct dl_start_final_info *info)
 #else
 # define bootstrap_map info.l
 #endif
-
+//!xiaojin-ld_start -1 _dl_start
 static ElfW(Addr) __attribute_used__
 _dl_start (void *arg)
 {
@@ -593,6 +594,7 @@ _dl_start (void *arg)
 
   {
 #ifdef DONT_USE_BOOTSTRAP_MAP
+    //!xiaojin-ld_start -2 _dl_start_final
     ElfW(Addr) entry = _dl_start_final (arg);
 #else
     ElfW(Addr) entry = _dl_start_final (arg, &info);
@@ -1311,7 +1313,7 @@ rtld_setup_main_map (struct link_map *main_map)
 
   return has_interp;
 }
-
+//!xiaojin-ld_start -4 dl_main
 static void
 dl_main (const ElfW(Phdr) *phdr,
 	 ElfW(Word) phnum,

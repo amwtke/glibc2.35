@@ -77,7 +77,7 @@ void *_dl_random attribute_relro = NULL;
 #ifndef DL_STACK_END
 # define DL_STACK_END(cookie) ((void *) (cookie))
 #endif
-
+//!xiaojin-ld_start -3.1 定义
 ElfW(Addr)
 _dl_sysdep_start (void **start_argptr,
 		  void (*dl_main) (const ElfW(Phdr) *phdr, ElfW(Word) phnum,
@@ -252,7 +252,7 @@ _dl_sysdep_start (void **start_argptr,
      possible we stop the program.  */
   if (__builtin_expect (__libc_enable_secure, 0))
     __libc_check_standard_fds ();
-
+  //!xiaojin-ld_start -3.2 调用 dl_main。
   (*dl_main) (phdr, phnum, &user_entry, GLRO(dl_auxv));
   return user_entry;
 }

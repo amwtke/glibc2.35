@@ -129,6 +129,7 @@ elf_machine_runtime_setup (struct link_map *l, struct r_scope_elem *scope[],
 /* Initial entry point code for the dynamic linker.
    The C function `_dl_start' is the real entry point;
    its return value is the user program's entry point.  */
+//!xiaojin-ld_start -0 就是从linux内核跳转到ld执行的第一行代码处。_start 调用 `call call _dl_start`跳转到dl解析出来的地址继续执行，应该就是main函数地址了。dl_start 主要是继续加载glibc的代码与数据。加载 必要的so，同时返回最终的执行地址 —— main函数。
 #define RTLD_START asm ("\n\
 .text\n\
 	.align 16\n\
