@@ -1922,7 +1922,7 @@ struct malloc_par
    a static or mmapped malloc_state, you MUST explicitly zero-fill it
    before using. This malloc relies on the property that malloc_state
    is initialized to all zeroes (as is true of C statics).  */
-
+//!xiaojin-malloc main_arena定义
 static struct malloc_state main_arena =
 {
   .mutex = _LIBC_LOCK_INITIALIZER,

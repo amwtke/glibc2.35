@@ -732,7 +732,7 @@ detach_arena (mstate replaced_arena)
       --replaced_arena->attached_threads;
     }
 }
-
+//!xiaojin-malloc 生成arena
 static mstate
 _int_new_arena (size_t size)
 {
