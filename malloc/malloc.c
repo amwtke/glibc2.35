@@ -1149,7 +1149,7 @@ static mchunkptr mremap_chunk(mchunkptr p, size_t new_size);
   It declares a "view" into memory allowing access to necessary
   fields at known offsets from a given base. See explanation below.
 */
-
+//~xiaojin-malloc chunk头
 struct malloc_chunk {
 
   INTERNAL_SIZE_T      mchunk_prev_size;  /* Size of previous chunk (if free).  */
