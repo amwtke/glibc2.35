@@ -3348,6 +3348,7 @@ __libc_malloc (size_t bytes)
 }
 libc_hidden_def (__libc_malloc)
 
+//!xiaojin-malloc free
 void
 __libc_free (void *mem)
 {
