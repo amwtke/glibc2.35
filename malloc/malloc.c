@@ -3348,7 +3348,7 @@ __libc_malloc (size_t bytes)
 }
 libc_hidden_def (__libc_malloc)
 
-//!xiaojin-malloc free
+//!xiaojin-malloc free chunk只会回收到fast或者unsorted bin。
 void
 __libc_free (void *mem)
 {
@@ -3366,7 +3366,7 @@ __libc_free (void *mem)
   int err = errno;
 
   p = mem2chunk (mem);
-
+//~ 如果要的size特别大，就直接使用mmap，这时回收的时候，就直接munmap掉就行了。
   if (chunk_is_mmapped (p))                       /* release mmapped memory. */
     {
       /* See if the dynamic brk/mmap threshold needs adjusting.
@@ -4503,7 +4503,7 @@ _int_free (mstate av, mchunkptr p, int have_lock)
     If eligible, place chunk on a fastbin so it can be found
     and used quickly in malloc.
   */
-
+//~1 首先优先回收到fastbin中
   if ((unsigned long)(size) <= (unsigned long)(get_max_fast ())
 
 #if TRIM_FASTBINS
@@ -4564,6 +4564,7 @@ _int_free (mstate av, mchunkptr p, int have_lock)
 	  old2 = old;
 	  p->fd = PROTECT_PTR (&p->fd, old);
 	}
+      //~ fastbin是单链表，用cas操作来插入，防止contention。
       while ((old = catomic_compare_and_exchange_val_rel (fb, p, old2))
 	     != old2);
 
@@ -4579,7 +4580,7 @@ _int_free (mstate av, mchunkptr p, int have_lock)
   /*
     Consolidate other non-mmapped chunks as they arrive.
   */
-
+//~ 2 不能到fastbin，再看看能不能回收到unsorted bin，注意只有在malloc的时候才会从unsorted移动到small或者large中。这就叫做多给一次机会 —— 在放入small/large之前，先放入unsorted，如果下次malloc还是这个大小，就不要放入small/large了，直接返回；因为放入s/l bins 有很多循环要做，不够快。
   else if (!chunk_is_mmapped(p)) {
 
     /* If we're single-threaded, don't lock the arena.  */
@@ -4610,7 +4611,7 @@ _int_free (mstate av, mchunkptr p, int have_lock)
       malloc_printerr ("free(): invalid next size (normal)");
 
     free_perturb (chunk2mem(p), size - CHUNK_HDR_SZ);
-
+    //~放入unsorted之前，还要做合并操作。向前，向后合并一次。
     /* consolidate backward */
     if (!prev_inuse(p)) {
       prevsize = prev_size (p);
@@ -4642,6 +4643,7 @@ _int_free (mstate av, mchunkptr p, int have_lock)
       fwd = bck->fd;
       if (__glibc_unlikely (fwd->bk != bck))
 	malloc_printerr ("free(): corrupted unsorted chunks");
+      //~这里放入unsorted bin。
       p->fd = fwd;
       p->bk = bck;
       if (!in_smallbin_range(size))
@@ -4711,6 +4713,7 @@ _int_free (mstate av, mchunkptr p, int have_lock)
   */
 
   else {
+    //~ 3 直接回收到os。删掉这个vma。
     munmap_chunk (p);
   }
 }
