@@ -3801,7 +3801,7 @@ _int_malloc (mstate av, size_t bytes)
      that are so large that they wrap around zero when padded and
      aligned.
    */
-
+//~ 根据bytes得到nb。将实际需求对应到chunk的大小。
   if (!checked_request2size (bytes, &nb))
     {
       __set_errno (ENOMEM);
@@ -3836,14 +3836,15 @@ _int_malloc (mstate av, size_t bytes)
     }							\
   while ((pp = catomic_compare_and_exchange_val_acq (fb, pp, victim)) \
 	 != victim);					\
-
+//~ 0 先看看是否fastbin满足需求。
   if ((unsigned long) (nb) <= (unsigned long) (get_max_fast ()))
     {
+      //~ 根据nb得到fastbin的索引。fast small都是通过类似buddy system的链表来索引的。异曲同工。
       idx = fastbin_index (nb);
       mfastbinptr *fb = &fastbin (av, idx);
       mchunkptr pp;
       victim = *fb;
-
+      //~ 如果相应size的链表有chunk，说明找到了，就从fastbin里面移除，返回。
       if (victim != NULL)
 	{
 	  if (__glibc_unlikely (misaligned_chunk (victim)))
@@ -3899,7 +3900,7 @@ _int_malloc (mstate av, size_t bytes)
      processed to find best fit. But for small ones, fits are exact
      anyway, so we can check now, which is faster.)
    */
-
+//~ 1. 再看看smallbin是否满足需求。
   if (in_smallbin_range (nb))
     {
       idx = smallbin_index (nb);
@@ -3962,6 +3963,7 @@ _int_malloc (mstate av, size_t bytes)
 
   else
     {
+      //~ 2. 在largebin中找，分配的size比较大。
       idx = largebin_index (nb);
       if (atomic_load_relaxed (&av->have_fastchunks))
         malloc_consolidate (av);
@@ -3989,13 +3991,17 @@ _int_malloc (mstate av, size_t bytes)
 
   tcache_unsorted_count = 0;
 #endif
-
+//~ 3. fast small large都没有，那么就在unsorted里面找，如果找到大小就返回，如果没有也能顺便整理一下unsorted bin，将元素移到 small/fast中去。
   for (;; )
     {
       int iters = 0;
+      //~ (av->bk)unsorted victim是bin的最后一个 因为是个double-linked list。这个循环不结束，直到遍历了unsorted bin一遍。
+      //! 0. 这个while纯纯的只做移动。上面的for是在while移动完以后，再次从small与large中找chunk。效率是不是有点低啊。
       while ((victim = unsorted_chunks (av)->bk) != unsorted_chunks (av))
         {
+          //~ bck是victim的后一个，整个遍历过程是向后进行的。
           bck = victim->bk;
+          //~ 当前victim chunk的大小
           size = chunksize (victim);
           mchunkptr next = chunk_at_offset (victim, size);
 
@@ -4022,6 +4028,7 @@ _int_malloc (mstate av, size_t bytes)
            */
 
           if (in_smallbin_range (nb) &&
+            //~ 只有一个chunk在unsorted bin里面。
               bck == unsorted_chunks (av) &&
               victim == av->last_remainder &&
               (unsigned long) (size) > (unsigned long) (nb + MINSIZE))
@@ -4050,13 +4057,14 @@ _int_malloc (mstate av, size_t bytes)
             }
 
           /* remove from unsorted list */
+          //! 1 把victim移除unsorted 这个步骤很关键，摘出来以后马上就要放入small或者fast里面了。
           if (__glibc_unlikely (bck->fd != victim))
             malloc_printerr ("malloc(): corrupted unsorted chunks 3");
           unsorted_chunks (av)->bk = bck;
           bck->fd = unsorted_chunks (av);
 
           /* Take now instead of binning if exact fit */
-
+          //~ 如果当前victim正好就是需要的大小
           if (size == nb)
             {
               set_inuse_bit_at_offset (victim, size);
@@ -4076,6 +4084,7 @@ _int_malloc (mstate av, size_t bytes)
 		{
 #endif
               check_malloced_chunk (av, victim, nb);
+              //~ 转成 user data的指针，准备返回了。
               void *p = chunk2mem (victim);
               alloc_perturb (p, bytes);
               return p;
@@ -4083,13 +4092,16 @@ _int_malloc (mstate av, size_t bytes)
 		}
 #endif
             }
-
+          //!2 xiaojin-malloc (exp chunk只能在这里，只能从unsorted bin里面转到 samll/large bin里面去)因为，free的过程，只会把free的chunk放入unsorted里面，free的过程也会包含consolidate的过程。
           /* place chunk in bin */
 
           if (in_smallbin_range (size))
             {
+              //~ size是victim的大小
               victim_index = smallbin_index (size);
+              //~ 根据size得到small bin中的链表头
               bck = bin_at (av, victim_index);
+              //~ fwd是链表头下的第一个chunk
               fwd = bck->fd;
             }
           else
@@ -4145,7 +4157,7 @@ _int_malloc (mstate av, size_t bytes)
               else
                 victim->fd_nextsize = victim->bk_nextsize = victim;
             }
-
+          //! 3、这里就是将unsorted的victim摘出来以后，头插法，插入对应的small bin的过程。 
           mark_bin (av, victim_index);
           victim->bk = bck;
           victim->fd = fwd;
@@ -4167,7 +4179,7 @@ _int_malloc (mstate av, size_t bytes)
 #define MAX_ITERS       10000
           if (++iters >= MAX_ITERS)
             break;
-        }
+        }//~while
 
 #if USE_TCACHE
       /* If all the small chunks we found ended up cached, return one now.  */
@@ -4181,7 +4193,7 @@ _int_malloc (mstate av, size_t bytes)
          If a large request, scan through the chunks of current bin in
          sorted order to find smallest that fits.  Use the skip list for this.
        */
-
+      //~ 4.0 转移完了以后，看看large是否满足。可以不断的看看更大的chunk index。看看是否可以分割出来。
       if (!in_smallbin_range (nb))
         {
           bin = bin_at (av, idx);
@@ -4254,7 +4266,7 @@ _int_malloc (mstate av, size_t bytes)
          The particular case of skipping all bins during warm-up phases
          when no chunks have been returned yet is faster than it might look.
        */
-
+//~ 5 large没有，继续搜索。
       ++idx;
       bin = bin_at (av, idx);
       block = idx2block (idx);
@@ -4351,7 +4363,7 @@ _int_malloc (mstate av, size_t bytes)
               return p;
             }
         }
-
+//~ 6 最后，可能是app第一次调用malloc，所有bin都没有，只有一个top chunk，相当于一个大蛋糕，还没格式化，所以切下第一块，分配给app。当app频繁的malloc free的时候，才会不断地启用那些bin，普通的程序到这就完了。像java mysql 等等大的app，才会用到那么多的bin。
     use_top:
       /*
          If large enough, split off the chunk bordering the end of memory
