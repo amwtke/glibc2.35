@@ -4092,7 +4092,7 @@ _int_malloc (mstate av, size_t bytes)
 		}
 #endif
             }
-          //!2 xiaojin-malloc (exp chunk只能在这里，只能从unsorted bin里面转到 samll/large bin里面去)因为，free的过程，只会把free的chunk放入unsorted里面，free的过程也会包含consolidate的过程。
+          //!2 xiaojin-malloc (exp chunk只能在这里，只能从unsorted bin里面转到 samll/large bin里面去)因为，free的过程，只会把free的chunk放入unsorted里面，free的过程也会包含consolidate的过程。参考：1 `https://sploitfun.wordpress.com/2015/02/10/understanding-glibc-malloc/comment-page-1/?blogsub=confirming#subscribe-blog%E3%80%82` 2 `https://sourceware.org/glibc/wiki/MallocInternals`。
           /* place chunk in bin */
 
           if (in_smallbin_range (size))
