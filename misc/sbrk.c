@@ -70,7 +70,7 @@ __sbrk (intptr_t increment)
       __set_errno (ENOMEM);
       return (void *) -1;
     }
-
+//!xiaojin-malloc brk-0
   if (__brk (oldbrk + increment) < 0)
     return (void *) -1;
 

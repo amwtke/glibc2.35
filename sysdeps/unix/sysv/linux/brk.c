@@ -29,7 +29,7 @@ void *__curbrk = 0;
    linker.  */
 weak_alias (__curbrk, ___brk_addr)
 #endif
-
+//!xiaojin-malloc brk-1
 int
 __brk (void *addr)
 {
