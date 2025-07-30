@@ -91,6 +91,7 @@ libc_hidden_proto (__lll_lock_wait)
    return.  Otherwise, ensure that it is >1 (acquired, possibly with waiters)
    and then block until we acquire the lock, at which point FUTEX will still be
    >1.  The lock is always acquired on return.  */
+//!xiaojin-futex -4 调用 __lll_lock_wait
 #define __lll_lock(futex, private)                                      \
   ((void)                                                               \
    ({                                                                   \

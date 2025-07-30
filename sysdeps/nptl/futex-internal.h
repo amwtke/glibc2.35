@@ -143,6 +143,7 @@ futex_supports_pshared (int pshared)
 static __always_inline int
 futex_wait (unsigned int *futex_word, unsigned int expected, int private)
 {
+  //!xiaojin-futex -6 lll_futex_timed_wait
   int err = lll_futex_timed_wait (futex_word, expected, NULL, private);
   switch (err)
     {

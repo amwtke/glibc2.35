@@ -31,6 +31,7 @@
    includes this file.  */
 #ifndef LLL_MUTEX_LOCK
 /* lll_lock with single-thread optimization.  */
+//!xiaojin-futex -2 lll_mutex_lock_optimized
 static inline void
 lll_mutex_lock_optimized (pthread_mutex_t *mutex)
 {
@@ -45,6 +46,7 @@ lll_mutex_lock_optimized (pthread_mutex_t *mutex)
   if (private == LLL_PRIVATE && SINGLE_THREAD_P && mutex->__data.__lock == 0)
     mutex->__data.__lock = 1;
   else
+	//!xiaojin-futex -3 lll_lock `int val`就是这个 int __lock
     lll_lock (mutex->__data.__lock, private);
 }
 
@@ -72,6 +74,7 @@ lll_mutex_lock_optimized (pthread_mutex_t *mutex)
 static int __pthread_mutex_lock_full (pthread_mutex_t *mutex)
      __attribute_noinline__;
 
+//!xiaojin-futex -0 pthread_mutex_lock
 int
 PTHREAD_MUTEX_LOCK (pthread_mutex_t *mutex)
 {
@@ -125,6 +128,7 @@ PTHREAD_MUTEX_LOCK (pthread_mutex_t *mutex)
 	}
 
       /* We have to get the mutex.  */
+	  //!xiaojin-futex -1 调用点。mutex就是那个用户态的 int val。
       LLL_MUTEX_LOCK_OPTIMIZED (mutex);
 
       assert (mutex->__data.__owner == 0);

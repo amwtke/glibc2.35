@@ -72,7 +72,7 @@
 /* Wait while *FUTEXP == VAL for an lll_futex_wake call on FUTEXP.  */
 # define lll_futex_wait(futexp, val, private) \
   lll_futex_timed_wait (futexp, val, NULL, private)
-
+//!xiaojin-futex -7 4是参数个数 lll_futex_syscall 是调用宏。
 # define lll_futex_timed_wait(futexp, val, timeout, private)     \
   lll_futex_syscall (4, futexp,                                 \
 		     __lll_private_flag (FUTEX_WAIT, private),  \

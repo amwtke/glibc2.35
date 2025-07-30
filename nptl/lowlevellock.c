@@ -46,6 +46,7 @@ __lll_lock_wait (int *futex, int private)
     {
     futex:
       LIBC_PROBE (lll_lock_wait, 1, futex);
+      //!xiaojin-futex -5  futex_wait
       futex_wait ((unsigned int *) futex, 2, private); /* Wait if *futex == 2.  */
     }
 }

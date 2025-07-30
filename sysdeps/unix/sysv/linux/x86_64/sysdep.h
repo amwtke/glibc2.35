@@ -229,7 +229,10 @@
 /* Create a variable 'name' based on type of variable 'X' to avoid
    explicit types.  */
 #define TYPEFY(X, name) __typeof__ (ARGIFY (X)) name
-
+/*
+  !xiaojin-futex -8 最终到这里。系统调用号是通过 SYS_ify (futex)得到 => __NR_futex => #define __NR_futex 202
+- 全部展开后  internal_syscall4(202,args)
+*/
 #undef INTERNAL_SYSCALL
 #define INTERNAL_SYSCALL(name, nr, args...)				\
 	internal_syscall##nr (SYS_ify (name), args)
@@ -297,7 +300,7 @@
     : "memory", REGISTERS_CLOBBERED_BY_SYSCALL);			\
     (long int) resultvar;						\
 })
-
+//!xiaojin-futex -9 internal_syscall4 可以看到汇编指令 syscall了。
 #undef internal_syscall4
 #define internal_syscall4(number, arg1, arg2, arg3, arg4)		\
 ({									\
